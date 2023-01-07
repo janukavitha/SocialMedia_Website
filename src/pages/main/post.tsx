@@ -51,14 +51,14 @@ export const Post=(props:Props)=>
     return (
         <div>
             <div className="title">
-                <h1>{post.title}</h1>
+                <h1>{post.title}check</h1>
             </div>
             <div className="body">
                 <h2>{post.description}</h2>
             </div>
             <div className="footer">
                 <h3>@{post.username}</h3>
-                <button onClick={addLike}>{likes }</button>
+                <button onClick={addLike}></button>
                 {likes && <p>Likes:{likes.length}</p>}
             </div>
         </div>
