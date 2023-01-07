@@ -1,4 +1,4 @@
-import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { addDoc, collection, getDocs, query, where,deleteDoc, doc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../config/firebase";
@@ -9,6 +9,7 @@ interface Props
 }
 interface Like
 {
+    likeId:string,
     userId:string;
 }
 
@@ -25,17 +26,19 @@ export const Post=(props:Props)=>
 
     const getLikes=async ()=>{
         const data=await getDocs(likesDoc);
-        setLikes(data.docs.map((doc)=>({userId:doc.data().userId})));
+        setLikes(data.docs.map((doc)=>({userId:doc.data().userId, likeId:doc.id})));
     };
 
+
+
     const addLike =async ()=>{
-        await addDoc(likesRef,{userId: user?.uid,postId:post.id})
         try
         {
+            const newDoc=await addDoc(likesRef,{userId: user?.uid,postId:post.id})
             if(user)
             {
                 setLikes((prev)=> 
-                prev? [...prev, {userId: user.uid}]: [{userId :user.uid}]
+                prev? [...prev, {userId: user.uid, likeId:newDoc.id}]:[{userId :user.uid,likeId:newDoc.id}]
                 );
             }
         }
@@ -45,6 +48,32 @@ export const Post=(props:Props)=>
         }
     }
 
+    const removeLike =async ()=>
+    {
+        try
+        {
+            const likeToDeleteQuery=query(likesRef,
+                where("postId","==",post.id),
+                where("userId","==",user?.uid)
+                );
+            const likeToDeleteData=await getDocs(likeToDeleteQuery);
+            const likeId=likeToDeleteData.docs[0].id;
+            const likeToDelete=doc(db,"likes",likeId);
+            await deleteDoc(likeToDelete);
+            if(user)
+            {
+                setLikes((prev)=>
+                    prev && prev?.filter((like)=> like.likeId!==likeId) 
+                );
+            }
+        }
+        catch(err)
+        {
+            console.log(err);
+        }
+    }
+
+    const hasUserLinked= likes?.find((like)=>like.userId===user?.uid)
     useEffect(()=>{
         getLikes();
     },[]);
@@ -58,7 +87,9 @@ export const Post=(props:Props)=>
             </div>
             <div className="footer">
                 <h3>@{post.username}</h3>
-                <button onClick={addLike}></button>
+                <button onClick={hasUserLinked?removeLike:addLike}>
+                    {hasUserLinked?<>&#128078;</> :<>&#128077;</>}
+                </button>
                 {likes && <p>Likes:{likes.length}</p>}
             </div>
         </div>
