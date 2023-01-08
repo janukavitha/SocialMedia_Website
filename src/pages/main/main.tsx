@@ -7,6 +7,7 @@ import {Post} from "../main/post"
 export interface Post{
     id:string,
     userid:string;
+    image:string;
     title:string;
     username:string;
     description:string;
@@ -20,7 +21,7 @@ export const Main=()=>{
         const data=await getDocs(postsRef);
         setPostList(data.docs.map((doc)=>({...doc.data(),id:doc.id})) as Post[]);
     };
-
+    
     useEffect(()=>{
         getPosts();
     },[]);

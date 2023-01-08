@@ -1,23 +1,26 @@
 import { addDoc, collection, getDocs, query, where,deleteDoc, doc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, db } from "../../config/firebase";
+import { auth, db ,storage} from "../../config/firebase";
 import {Post as IPost} from "./main";
+import { listAll, ref,uploadBytes ,getDownloadURL} from "firebase/storage";
+
 interface Props
 {
     post:IPost
 }
+
 interface Like
 {
     likeId:string,
     userId:string;
 }
 
-
 export const Post=(props:Props)=>
 {
     const {post}=props;
     const [user]=useAuthState(auth);
+
     const [likes,setLikes] =useState<Like[] | null>(null);
 
     const likesRef=collection(db,"likes");
@@ -30,7 +33,7 @@ export const Post=(props:Props)=>
     };
 
 
-
+    // ADD LIKE STARTS
     const addLike =async ()=>{
         try
         {
@@ -47,7 +50,9 @@ export const Post=(props:Props)=>
             console.log(err);
         }
     }
+    // ADD LIKE ENDS
 
+    // REMOVE LIKE STARTS
     const removeLike =async ()=>
     {
         try
@@ -72,25 +77,31 @@ export const Post=(props:Props)=>
             console.log(err);
         }
     }
+    // REMOVE LIKE ENDS
 
     const hasUserLinked= likes?.find((like)=>like.userId===user?.uid)
+
     useEffect(()=>{
         getLikes();
     },[]);
     return (
         <div>
+            <div>
+            
+            {post.username && <p>@{post.username}</p>}
+            {post.image && <img src={post.image} width="200px" height="200"></img>}
+            </div>
             <div className="title">
-                <h1>{post.title}check</h1>
+                <h3>{post.title}</h3>
             </div>
             <div className="body">
-                <h2>{post.description}</h2>
+                <h4>{post.description}</h4>
             </div>
             <div className="footer">
-                <h3>@{post.username}</h3>
-                <button onClick={hasUserLinked?removeLike:addLike}>
+                {post.username &&<button onClick={hasUserLinked?removeLike:addLike}>
                     {hasUserLinked?<>&#128078;</> :<>&#128077;</>}
-                </button>
-                {likes && <p>Likes:{likes.length}</p>}
+                </button>}
+                { post.username && likes && <p>Likes:{likes.length}</p>}
             </div>
         </div>
     );
