@@ -2,7 +2,8 @@ import { addDoc, collection, getDocs, query, where,deleteDoc, doc } from "fireba
 import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db ,storage} from "../../config/firebase";
-import {Post as IPost} from "./main";
+import { Post as IPost } from "./main";
+import { Comment } from "../comment/create-comment";
 import { listAll, ref,uploadBytes ,getDownloadURL} from "firebase/storage";
 
 interface Props
@@ -32,7 +33,6 @@ export const Post=(props:Props)=>
         setLikes(data.docs.map((doc)=>({userId:doc.data().userId, likeId:doc.id})));
     };
 
-
     // ADD LIKE STARTS
     const addLike =async ()=>{
         try
@@ -45,12 +45,12 @@ export const Post=(props:Props)=>
                 );
             }
         }
+
         catch(err)
         {
             console.log(err);
         }
     }
-    // ADD LIKE ENDS
 
     // REMOVE LIKE STARTS
     const removeLike =async ()=>
@@ -84,24 +84,30 @@ export const Post=(props:Props)=>
     useEffect(()=>{
         getLikes();
     },[]);
+
+   // Adding Comments
+    
+    // Adding Comments
     return (
         <div>
             <div>
-            
-            {post.username && <p>@{post.username}</p>}
+            {post.username && <h3>@{post.username}</h3>}
             {post.image && <img src={post.image} width="200px" height="200"></img>}
             </div>
             <div className="title">
-                <h3>{post.title}</h3>
+                <p>{post.title}</p>
             </div>
             <div className="body">
-                <h4>{post.description}</h4>
+                <p>{post.description}</p>
             </div>
             <div className="footer">
                 {post.username &&<button onClick={hasUserLinked?removeLike:addLike}>
                     {hasUserLinked?<>&#128078;</> :<>&#128077;</>}
                 </button>}
                 { post.username && likes && <p>Likes:{likes.length}</p>}
+            </div>
+            <div>
+                <Comment postid={post.id} username={post.username}/>
             </div>
         </div>
     );

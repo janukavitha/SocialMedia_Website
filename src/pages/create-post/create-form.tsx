@@ -40,6 +40,7 @@ export const CreateForm =()=>
             image:imageList,
             username: user?.displayName,
             userid:user?.uid,
+            comment:[],
         });
         navigate('/');
     };
